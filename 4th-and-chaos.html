@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4th &amp; Chaos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0F1C14;
+    --panel: #16261C;
+    --panel-raised: #1C2E22;
+    --field: #1F3D28;
+    --field-dark: #1A3421;
+    --line: #EDE6D6;
+    --line-dim: #B9C4B4;
+    --gold: #D4A94C;
+    --gold-dim: #8C7233;
+    --chaos: #C1443C;
+    --sage: #7FA187;
+    --info: #5B8FB0;
+    --shadow: rgba(0,0,0,.45);
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    color: var(--line);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 18px 12px 60px;
+  }
+  #app{ width: 100%; max-width: 720px; }
+
+  h1,h2,h3{ font-family:'Oswald',sans-serif; margin:0; letter-spacing:.02em; }
+  .brand{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom: 14px; padding: 0 2px;
+  }
+  .brand h1{ font-size: 1.5rem; font-weight:700; color: var(--line); }
+  .brand h1 span{ color: var(--gold); }
+  .brand .tag{ font-size:.72rem; color: var(--sage); font-style: italic; }
+
+  /* ---------- Scorebug ---------- */
+  .scorebug{
+    background: var(--panel);
+    border: 1px solid #24352A;
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    display:grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items:center;
+    gap: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .sb-team{ display:flex; flex-direction:column; gap:2px; }
+  .sb-team.right{ text-align:right; align-items:flex-end; }
+  .sb-name{ font-family:'Oswald',sans-serif; font-size:.85rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  .sb-name.offense::before{ content:"● "; color: var(--gold); }
+  .sb-team.right .sb-name.offense::before{ content:""; }
+  .sb-team.right .sb-name.offense::after{ content:" ●"; color: var(--gold); }
+  .sb-score{ font-family:'Oswald',sans-serif; font-size:2rem; font-weight:700; line-height:1; }
+  .sb-mid{ text-align:center; font-size:.7rem; color: var(--sage); }
+  .sb-mid .q{ font-family:'Oswald',sans-serif; color:var(--line); font-size:.95rem; font-weight:600; }
+  .sb-mid .dd{ margin-top:2px; font-weight:600; color: var(--gold); }
+
+  .clutch-banner{
+    background: linear-gradient(90deg, var(--chaos), #8f2f29);
+    color: var(--line);
+    text-align:center;
+    font-family:'Oswald',sans-serif;
+    letter-spacing:.08em;
+    font-size:.75rem;
+    padding: 5px;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.72;} }
+
+  /* ---------- Field ---------- */
+  .field-wrap{
+    background: var(--field);
+    border: 1px solid #14261A;
+    border-radius: var(--radius);
+    padding: 14px 10px;
+    margin-bottom: 12px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+    overflow:hidden;
+  }
+  .field{
+    position:relative;
+    height: 64px;
+    background: repeating-linear-gradient(90deg, var(--field) 0px, var(--field) 38px, var(--field-dark) 38px, var(--field-dark) 40px);
+    border: 2px solid var(--line-dim);
+  }
+  .yardmark{
+    position:absolute; top:0; bottom:0; width:1px; background: rgba(237,230,214,0.28);
+  }
+  .endzone{
+    position:absolute; top:0; bottom:0; width:6%; 
+    background: repeating-linear-gradient(45deg, rgba(212,169,76,0.18), rgba(212,169,76,0.18) 6px, transparent 6px, transparent 12px);
+  }
+  .endzone.left{ left:0; border-right:2px solid var(--line-dim); }
+  .endzone.right{ right:0; border-left:2px solid var(--line-dim); }
+  .ball-marker{
+    position:absolute; top:-10px; width:14px; height:14px;
+    background: var(--gold);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    transform: translateX(-50%) rotate(90deg);
+    box-shadow: 0 0 8px rgba(212,169,76,.7);
+    transition: left .5s ease;
+  }
+  .firstdown-marker{
+    position:absolute; top:0; bottom:0; width:2px; background: var(--chaos);
+    transition: left .5s ease;
+  }
+  .field-labels{ display:flex; justify-content:space-between; font-size:.62rem; color: var(--sage); margin-top:4px; padding: 0 2px;}
+
+  /* ---------- Panels ---------- */
+  .panel{
+    background: var(--panel);
+    border: 1px solid #24352A;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .panel h2{ font-size:1.05rem; color:var(--gold); margin-bottom:4px; }
+  .panel .sub{ font-size:.82rem; color: var(--sage); margin-bottom: 14px; line-height:1.4; }
+
+  .btn-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:.85rem;
+    background: var(--panel-raised);
+    color: var(--line);
+    border: 1px solid #2E4634;
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    cursor:pointer;
+    transition: border-color .15s, background .15s, transform .1s;
+  }
+  button:hover{ border-color: var(--gold); background:#213524; }
+  button:active{ transform: scale(.98); }
+  button.primary{ background: var(--gold); color: #241B08; border-color: var(--gold); }
+  button.primary:hover{ background:#e2b95c; }
+  button.danger{ background: var(--chaos); color: var(--line); border-color:var(--chaos); }
+  button.danger:hover{ background:#d2544c; }
+  button.ghost{ background: transparent; }
+  button:disabled{ opacity:.35; cursor:not-allowed; }
+  button.selected{ outline: 2px solid var(--gold); }
+
+  .card-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom: 4px; }
+  .play-card{
+    text-align:left;
+    padding: 10px 12px;
+    background: var(--panel-raised);
+    border: 1px solid #2E4634;
+    border-radius: var(--radius);
+    cursor:pointer;
+  }
+  .play-card .pc-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:.9rem; }
+  .play-card .pc-desc{ font-size:.68rem; color: var(--sage); margin-top:2px; }
+  .play-card.selected{ outline:2px solid var(--gold); background:#243726; }
+
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding: 8px 0; border-top:1px solid #24352A; }
+  .toggle-row:first-of-type{ border-top:none; }
+  .toggle-row .tr-label{ font-size:.82rem; }
+  .toggle-row .tr-sub{ font-size:.68rem; color:var(--sage); }
+
+  .momentum-bar{ display:flex; gap:4px; margin: 6px 0 2px; }
+  .momentum-pip{ flex:1; height:8px; background: #24352A; border-radius:2px; }
+  .momentum-pip.filled{ background: var(--gold); }
+
+  .handoff{ text-align:center; padding: 30px 16px; }
+  .handoff h2{ font-size:1.4rem; margin-bottom: 8px; }
+  .handoff .sub{ margin-bottom: 22px; }
+  .handoff-icon{ font-size:2.2rem; margin-bottom: 10px; }
+
+  .log{ max-height:130px; overflow-y:auto; font-size:.78rem; color: var(--line-dim); display:flex; flex-direction:column-reverse; gap:5px; padding-right:4px; }
+  .log-entry{ border-left:2px solid var(--gold-dim); padding-left:8px; }
+  .log-entry.chaos{ border-left-color: var(--chaos); color: var(--line); }
+  .log-entry.score{ border-left-color: var(--gold); color: var(--gold); font-weight:600; }
+
+  .reveal-plays{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px; }
+  .reveal-card{ flex:1; background: var(--panel-raised); border:1px solid #2E4634; border-radius:var(--radius); padding:10px; text-align:center; }
+  .reveal-card .who{ font-size:.65rem; color:var(--sage); text-transform:uppercase; letter-spacing:.05em; }
+  .reveal-card .what{ font-family:'Oswald',sans-serif; font-weight:600; margin-top:2px; }
+  .reveal-vs{ font-family:'Oswald',sans-serif; color:var(--chaos); font-weight:700; }
+
+  .result-headline{
+    font-family:'Oswald',sans-serif; font-size:1.5rem; font-weight:700;
+    text-align:center; margin: 10px 0 4px; color: var(--line);
+  }
+  .result-headline.good{ color: var(--gold); }
+  .result-headline.bad{ color: var(--chaos); }
+  .result-sub{ text-align:center; font-size:.85rem; color: var(--sage); margin-bottom: 14px; }
+  .die-row{ display:flex; justify-content:center; gap:10px; margin: 14px 0; font-size:.78rem; color:var(--sage); }
+  .die{
+    width:40px; height:40px; border-radius:6px; background:var(--panel-raised); border:1px solid var(--gold);
+    display:flex; align-items:center; justify-content:center; font-family:'Oswald',sans-serif; font-size:1.2rem; font-weight:700; color:var(--gold);
+  }
+  .breakdown{ font-size:.72rem; color:var(--sage); text-align:center; margin-bottom:14px; line-height:1.6; }
+
+  .chaos-modal{
+    background: linear-gradient(160deg, #23130F, var(--panel));
+    border: 1px solid var(--chaos);
+  }
+  .chaos-modal h2{ color: var(--chaos); }
+  .chaos-title{ font-family:'Oswald',sans-serif; font-size:1.2rem; margin-bottom:6px; }
+
+  .team-card{
+    background: var(--panel-raised); border:1px solid #2E4634; border-radius:var(--radius);
+    padding:14px; cursor:pointer; margin-bottom:10px;
+  }
+  .team-card.selected{ outline:2px solid var(--gold); }
+
+  .subchoice-wrap{
+    background: #0F1C14; border:1px dashed #2E4634; border-radius: var(--radius);
+    padding:10px; margin: 4px 0 12px;
+  }
+  .subchoice-label{ font-size:.68rem; color:var(--sage); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
+  .subchoice-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .subchoice-btn{ flex:1; min-width:110px; text-align:left; padding:8px 10px; }
+  .subchoice-btn .sc-name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:.82rem; }
+  .subchoice-btn .sc-desc{ font-size:.64rem; color:var(--sage); margin-top:1px; }
+  .subchoice-btn.selected{ outline:2px solid var(--gold); background:#243726; }
+
+  .star-pool-card{
+    background: var(--panel-raised); border:1px solid #2E4634; border-radius:var(--radius);
+    padding:12px; cursor:pointer; margin-bottom:8px; display:flex; align-items:flex-start; gap:10px;
+  }
+  .star-pool-card.selected{ outline:2px solid var(--gold); background:#243726; }
+  .star-pool-card .icon{ font-size:1.3rem; }
+  .star-pool-card .name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:.9rem; }
+  .star-pool-card .desc{ font-size:.7rem; color:var(--sage); margin-top:2px; }
+  .kind-tag{ display:inline-block; font-size:.6rem; text-transform:uppercase; letter-spacing:.04em; padding:1px 5px; border-radius:2px; margin-top:4px; }
+  .kind-tag.active{ background:#2E4634; color:var(--gold); }
+  .kind-tag.passive{ background:#2E4634; color:var(--info); }
+
+  .passive-badge{ font-size:.68rem; color:var(--info); padding:4px 0; }
+  .team-card h3{ font-size:1.05rem; margin-bottom:8px; }
+  .stat-row{ display:flex; gap:10px; flex-wrap:wrap; font-size:.75rem; }
+  .stat-chip{ background:#0F1C14; border:1px solid #24352A; padding:3px 8px; border-radius:2px; }
+  .stat-chip b{ color: var(--gold); }
+
+  .footer-note{ text-align:center; font-size:.7rem; color: var(--sage); margin-top: 18px; opacity:.7; }
+
+  @media (max-width:420px){
+    .card-grid{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* =========================================================
+   4TH & CHAOS — pass-and-play football strategy game
+   Single-file vanilla JS. State machine driven by `state.phase`.
+   ========================================================= */
+
+/* ---------- Static data ---------- */
+const TEAMS = {
+  power:   { id:'power',   name:'Ironclad',    run:9, pass:5, def:9, st:6,
+             desc:'Grind it out and stop the run.' },
+  air:     { id:'air',     name:'Skyline',     run:4, pass:10, def:5, st:7,
+             desc:'Live and die by the deep ball.' },
+  balanced:{ id:'balanced',name:'Rivertown',   run:7, pass:7, def:7, st:7,
+             desc:'No holes, no ceiling.' },
+};
+
+const OFF_PLAYS = {
+  run:       { id:'run', name:'Run', type:'run', stat:'run', desc:'Steady, low risk',
+               subOptions:[
+                 { id:'gap', name:'Gap (Inside)', desc:'High floor, tougher vs a stacked box' },
+                 { id:'sweep', name:'Sweep (Outside)', desc:'Boom or bust, needs edge space' },
+               ] },
+  shortpass: { id:'shortpass', name:'Short Pass', type:'pass_short', stat:'pass', desc:'Safe, quick throw',
+               subOptions:[
+                 { id:'slant', name:'Slant', desc:'Quick inside, eats up a blitz' },
+                 { id:'arrow', name:'Arrow', desc:'Quick outside, beats man coverage' },
+               ] },
+  deeppass:  { id:'deeppass', name:'Deep Pass', type:'pass_deep', stat:'pass', desc:'High risk, high reward',
+               subOptions:[
+                 { id:'go', name:'Go Ball', desc:'Max shot down the sideline' },
+                 { id:'post', name:'Post', desc:'Deep middle, steadier than a Go' },
+               ] },
+  screen:    { id:'screen', name:'Screen', type:'pass_short', stat:'pass', desc:'Kills the blitz', antiBlitz:true },
+  playaction:{ id:'playaction', name:'Play Action', type:'pass_deep', stat:'pass', desc:'Sells the run first' },
+  qbsneak:   { id:'qbsneak', name:'QB Sneak', type:'run', stat:'run', desc:'Short yardage specialist', shortYardage:true },
+  draw:      { id:'draw', name:'Draw', type:'run', stat:'run', desc:'Kills the blitz', antiBlitz:true },
+  trick:     { id:'trick', name:'Trick Play', type:'special', stat:'pass', desc:'Wild swing, huge variance' },
+};
+
+const DEF_PLAYS = {
+  runstuff:     { id:'runstuff', name:'Run Stuff', predicts:'run', strongVs:['run'], weakVs:['pass_deep','special'] },
+  mancoverage:  { id:'mancoverage', name:'Man Coverage', predicts:'pass', strongVs:['pass_short'], weakVs:['pass_deep','special'] },
+  zonecoverage: { id:'zonecoverage', name:'Zone Coverage', predicts:'pass', strongVs:['pass_deep'], weakVs:['pass_short','run'],
+                  subOptions:[
+                    { id:'shortzone', name:'Underneath', desc:'Sits on short routes' },
+                    { id:'deepzone', name:'Deep Shell', desc:'Sits on the deep ball' },
+                    { id:'balanced', name:'Cover 2', desc:'Split the difference' },
+                  ] },
+  blitz:        { id:'blitz', name:'Blitz', predicts:'run', strongVs:['run','pass_short'], weakVs:['pass_deep','special'], isBlitz:true,
+                  subOptions:[
+                    { id:'leftedge', name:'Left Edge', desc:'Pressure off the left side' },
+                    { id:'rightedge', name:'Right Edge', desc:'Pressure off the right side' },
+                    { id:'interior', name:'A-Gap', desc:'Straight up the middle' },
+                  ] },
+  prevent:      { id:'prevent', name:'Prevent', predicts:'pass', strongVs:['pass_deep','special'], weakVs:['run','pass_short'] },
+  qbspy:        { id:'qbspy', name:'QB Spy', predicts:'run', strongVs:['special'], weakVs:[] },
+};
+
+const STAR_PLAYERS = [
+  { id:'qb', name:'Elite QB', icon:'⭐', kind:'active', side:'offense',
+    desc:'+2 on pass plays. 2 uses per game.', appliesTo: p => p.stat==='pass' },
+  { id:'speed', name:'Speedster', icon:'⚡', kind:'active', side:'offense',
+    desc:'+2 on any play you call. 2 uses per game.', appliesTo: () => true },
+  { id:'powerback', name:'Power Back', icon:'💪', kind:'active', side:'offense',
+    desc:'+2 on run plays, more in short yardage. 2 uses per game.', appliesTo: p => p.type==='run' },
+  { id:'rusher', name:'Pass Rusher', icon:'🧱', kind:'active', side:'defense',
+    desc:'+2 when you call a Blitz. 2 uses per game.', blitzOnly:true },
+  { id:'corner', name:'Shutdown CB', icon:'🛡️', kind:'passive', side:'defense',
+    desc:'Always -2 to the opponent\'s deep passes. No uses to track — just drafted.' },
+  { id:'kicker', name:'Automatic Kicker', icon:'🦵', kind:'passive', side:'offense',
+    desc:'Always boosts your field goal and punt distance. No uses to track — just drafted.' },
+];
+
+const CHAOS_CARDS = [
+  { id:'falsestart', name:'False Start', icon:'🚨', desc:'The offense is flagged — 5 yard penalty, replay the down.',
+    apply: (s, offense) => { adjustPosition(s, offense, -5); log(s, `🚨 FALSE START — ${teamOf(s,offense).name} penalized 5 yards.`, 'chaos'); } },
+  { id:'homecrowd', name:'Home Crowd', icon:'🏟️', desc:'The defense gets +2 on the next play.',
+    apply: (s, offense, defense) => { s.buffs[defense].defBonus += 2; log(s, `🏟️ HOME CROWD — ${teamOf(s,defense).name} defense +2 next play.`, 'chaos'); } },
+  { id:'spiral', name:'Perfect Spiral', icon:'🎯', desc:'The offense\'s next pass play gets +2.',
+    apply: (s, offense) => { s.buffs[offense].passBonus += 2; log(s, `🎯 PERFECT SPIRAL — ${teamOf(s,offense).name} next pass +2.`, 'chaos'); } },
+  { id:'breakaway', name:'Breakaway', icon:'🏃', desc:'The offense\'s next successful run adds +10 yards.',
+    apply: (s, offense) => { s.buffs[offense].runBreakaway = true; log(s, `🏃 BREAKAWAY primed — ${teamOf(s,offense).name} next successful run +10 yds.`, 'chaos'); } },
+  { id:'special', name:'Special Teams Magic', icon:'🦵', desc:'The offense\'s next field goal or punt gets a bonus.',
+    apply: (s, offense) => { s.buffs[offense].stBonus += 15; log(s, `🦵 SPECIAL TEAMS MAGIC — ${teamOf(s,offense).name} kicking bonus primed.`, 'chaos'); } },
+  { id:'hitstick', name:'Hit Stick', icon:'💥', desc:'The defense\'s next successful play forces a fumble check.',
+    apply: (s, offense, defense) => { s.buffs[defense].fumbleCheck = true; log(s, `💥 HIT STICK — ${teamOf(s,defense).name} defense primed for a forced fumble.`, 'chaos'); } },
+  { id:'riskit', name:'Risk It', icon:'🎲', desc:'Roll again immediately — high roll is a bonus, low roll is a penalty.',
+    apply: (s, offense) => {
+      const r = rollDie();
+      if (r >= 5) { s.buffs[offense].nextPlayFlat += 4; log(s, `🎲 RISK IT — rolled ${r}! +4 bonus primed.`, 'chaos'); }
+      else if (r <= 2) { s.buffs[offense].nextPlayFlat -= 3; log(s, `🎲 RISK IT — rolled ${r}. -3 penalty primed.`, 'chaos'); }
+      else { log(s, `🎲 RISK IT — rolled ${r}. No effect.`, 'chaos'); }
+    } },
+];
+
+const PLAY_BUDGET_PER_QTR = 8; // snaps per quarter (soft clock)
+const TOTAL_QUARTERS = 4;
+
+/* ---------- State ---------- */
+let state = null;
+
+function freshBuffs(){ return { passBonus:0, runBonus:0, defBonus:0, runBreakaway:false, stBonus:0, fumbleCheck:false, nextPlayFlat:0, goDeep:false }; }
+
+function newGame(teamAId, teamBId, firstOffense, rosters){
+  const starUses = { A:{}, B:{} };
+  ['A','B'].forEach(side => {
+    (rosters[side]||[]).forEach(id => {
+      const star = STAR_PLAYERS.find(s=>s.id===id);
+      if (star && star.kind === 'active') starUses[side][id] = 2;
+    });
+  });
+  return {
+    phase: 'handoff-defense', // state machine phase
+    teams: { A: teamAId, B: teamBId },
+    starRoster: { A: rosters.A||[], B: rosters.B||[] },
+    score: { A:0, B:0 },
+    offense: firstOffense, // 'A' or 'B'
+    quarter: 1,
+    playsLeftInQtr: PLAY_BUDGET_PER_QTR,
+    totalPlaysLeft: PLAY_BUDGET_PER_QTR * TOTAL_QUARTERS,
+    down: 1,
+    distance: 10,
+    position: 25, // 0-100 relative to CURRENT offense's own goal line
+    momentum: { A:0, B:0 },
+    starUses,
+    buffs: { A: freshBuffs(), B: freshBuffs() },
+    clutchUsed: { A:false, B:false },
+    log: [],
+    gameOver: false,
+    winner: null,
+    // per-down working state
+    defChoice: null,
+    defSub: null,
+    defPrediction: null,
+    offChoice: null,
+    offSub: null,
+    offStar: null,
+    defStar: null,
+    momentumSpendUsed: false,
+    fourthDownChoice: null,
+    lastResult: null,
+    pendingChaos: null,
+    postChaosPhase: null,
+  };
+}
+
+function hasStar(s, side, id){ return s.starRoster[side].includes(id); }
+
+function teamOf(s, side){ return TEAMS[s.teams[side]]; }
+function otherSide(side){ return side === 'A' ? 'B' : 'A'; }
+function rollDie(){ return 1 + Math.floor(Math.random()*6); }
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function log(s, text, cls){ s.log.push({text, cls: cls||''}); }
+
+/* Move the ball for the given side (their own coordinate system), clamped */
+function adjustPosition(s, side, delta){
+  if (side !== s.offense) return; // penalties etc only meaningful on current offense
+  s.position = clamp(s.position + delta, 0, 100);
+}
+
+/* ---------- Core play resolution ---------- */
+function resolvePlay(s){
+  const offSide = s.offense, defSide = otherSide(s.offense);
+  const offTeam = teamOf(s, offSide), defTeam = teamOf(s, defSide);
+  const offPlay = OFF_PLAYS[s.offChoice], defPlay = DEF_PLAYS[s.defChoice];
+  const buffO = s.buffs[offSide], buffD = s.buffs[defSide];
+
+  let breakdown = [];
+  const die = offPlay.type === 'special' ? (rollDie()+rollDie()-rollDie()) : rollDie();
+  breakdown.push(`Die: ${die}`);
+
+  const offRating = offPlay.stat === 'pass' ? offTeam.pass : offTeam.run;
+  const defRating = defTeam.def;
+  let offMod = Math.round((offRating - defRating)/3);
+  breakdown.push(`Rating edge: ${offMod>=0?'+':''}${offMod}`);
+
+  let matchupAdj = 0;
+  if (defPlay.strongVs.includes(offPlay.type)) matchupAdj -= 3;
+  if (defPlay.weakVs.includes(offPlay.type)) matchupAdj += 3;
+  if (offPlay.antiBlitz && defPlay.isBlitz) matchupAdj += 3;
+  if (matchupAdj !== 0) breakdown.push(`Matchup: ${matchupAdj>=0?'+':''}${matchupAdj}`);
+
+  let predictionAdj = 0;
+  const offCategory = offPlay.type.startsWith('pass') || offPlay.type==='special' ? 'pass' : 'run';
+  const correct = s.defPrediction === offCategory;
+  predictionAdj = correct ? -2 : 2; // from OFFENSE's perspective: correct guess hurts offense
+  breakdown.push(`Prediction ${correct? 'correct (defense)':'wrong (offense)'}: ${predictionAdj>=0?'+':''}${predictionAdj}`);
+
+  let shortYardageBonus = 0;
+  if (offPlay.shortYardage && s.distance <= 2) { shortYardageBonus = 3; breakdown.push('Short yardage: +3'); }
+
+  let starAdj = 0;
+  if (s.offStar) {
+    const star = STAR_PLAYERS.find(x=>x.id===s.offStar);
+    if (star && star.appliesTo && star.appliesTo(offPlay)) {
+      starAdj += 2; breakdown.push(`${star.name}: +2`);
+      if (star.id === 'powerback' && s.distance <= 2) { starAdj += 2; breakdown.push('Short yardage bonus: +2'); }
+    }
+  }
+  let defStarAdj = 0;
+  if (s.defStar === 'rusher' && defPlay.isBlitz) { defStarAdj += 2; breakdown.push('Pass Rusher: +2 (defense)'); }
+
+  // passive stars
+  let passiveAdj = 0;
+  if (hasStar(s, defSide, 'corner') && (offPlay.type === 'pass_deep' || offPlay.type === 'special')) {
+    passiveAdj -= 2; breakdown.push('Shutdown CB: -2');
+  }
+
+  // sub-play matchups: lane vs run side, zone shell vs pass depth, route vs scheme
+  let subAdj = 0;
+  if (offPlay.type === 'run' && s.offSub && defPlay.isBlitz && s.defSub) {
+    const laneMatchesGap = s.defSub === 'interior';
+    const laneMatchesSweep = s.defSub === 'leftedge' || s.defSub === 'rightedge';
+    const guessedRight = (s.offSub === 'gap' && laneMatchesGap) || (s.offSub === 'sweep' && laneMatchesSweep);
+    subAdj += guessedRight ? -3 : 3;
+    breakdown.push(`Blitz lane ${guessedRight?'read the play':'guessed wrong'}: ${guessedRight?'-3':'+3'}`);
+  }
+  if ((offPlay.type === 'pass_short' || offPlay.type === 'pass_deep') && s.offSub && defPlay.id === 'zonecoverage' && s.defSub) {
+    if (s.defSub === 'balanced') { subAdj -= 1; breakdown.push('Cover 2 shell: -1'); }
+    else {
+      const shellMatchesShort = s.defSub === 'shortzone' && offPlay.type === 'pass_short';
+      const shellMatchesDeep = s.defSub === 'deepzone' && offPlay.type === 'pass_deep';
+      const guessedRight = shellMatchesShort || shellMatchesDeep;
+      subAdj += guessedRight ? -3 : 3;
+      breakdown.push(`Zone shell ${guessedRight?'sat on the route':'guessed wrong'}: ${guessedRight?'-3':'+3'}`);
+    }
+  }
+  if (s.offSub === 'slant') { if (defPlay.isBlitz) subAdj += 2; if (defPlay.id==='mancoverage') subAdj -= 1; }
+  if (s.offSub === 'arrow') { if (defPlay.id==='mancoverage') subAdj += 2; if (defPlay.isBlitz) subAdj -= 1; }
+  if (s.offSub === 'go') { if (defPlay.id==='prevent') subAdj -= 2; if (defPlay.id==='mancoverage') subAdj += 1; }
+  if (s.offSub === 'post') { if (defPlay.id==='prevent') subAdj -= 1; if (defPlay.id==='zonecoverage') subAdj += 1; }
+  if (s.offSub === 'gap') { if (defPlay.id==='runstuff') subAdj -= 1; }
+  if (s.offSub === 'sweep') { if (defPlay.id==='runstuff') subAdj += 1; }
+
+  let buffAdj = 0;
+  if (offPlay.stat==='pass' && buffO.passBonus) { buffAdj += buffO.passBonus; breakdown.push(`Chaos bonus: +${buffO.passBonus}`); }
+  if (buffO.nextPlayFlat) { buffAdj += buffO.nextPlayFlat; breakdown.push(`Chaos swing: ${buffO.nextPlayFlat>=0?'+':''}${buffO.nextPlayFlat}`); }
+  let defBuffAdj = 0;
+  if (buffD.defBonus) { defBuffAdj += buffD.defBonus; breakdown.push(`Defense chaos bonus: +${buffD.defBonus}`); }
+
+  const total = die + offMod + matchupAdj + predictionAdj + shortYardageBonus + starAdj - defStarAdj + buffAdj - defBuffAdj + passiveAdj + subAdj;
+
+  // clear one-shot buffs that were consumed
+  buffO.passBonus = 0; buffO.nextPlayFlat = 0; buffD.defBonus = 0;
+
+  // classify outcome
+  let yards = 0, outcomeLabel = '', turnover = null, isTD = false, big=false, sack=false, incomplete=false;
+  if (total <= 0) {
+    if (offPlay.stat==='pass') { sack = true; yards = -(2 + Math.floor(Math.random()*4)); outcomeLabel = 'SACKED'; }
+    else { yards = -(1 + Math.floor(Math.random()*3)); outcomeLabel = 'STUFFED'; }
+    const tRoll = rollDie();
+    if (tRoll <= 2) turnover = offPlay.stat==='pass' ? 'fumble' : 'fumble';
+  } else if (total <= 3) {
+    if (offPlay.stat==='pass' && !offPlay.shortYardage) { incomplete = true; yards = 0; outcomeLabel = 'INCOMPLETE'; }
+    else { yards = 1 + Math.floor(Math.random()*2); outcomeLabel = 'SHORT GAIN'; }
+  } else if (total <= 6) {
+    yards = 3 + Math.floor(Math.random()*3); outcomeLabel = 'GAIN';
+  } else if (total <= 9) {
+    yards = 6 + Math.floor(Math.random()*4); outcomeLabel = 'SOLID GAIN';
+  } else if (total <= 12) {
+    yards = 10 + Math.floor(Math.random()*9); big = true; outcomeLabel = 'BIG PLAY';
+  } else {
+    yards = 20 + Math.floor(Math.random()*20); big = true; outcomeLabel = 'BREAKAWAY';
+  }
+
+  // interception risk on bad passes when defense predicted correctly and blitzed/covered hard
+  if (!turnover && offPlay.stat==='pass' && total <=1 ) {
+    const iRoll = rollDie();
+    if (iRoll <= 2) turnover = 'interception';
+  }
+
+  // buffs: run breakaway, go deep, fumble check
+  if (buffO.runBreakaway && offPlay.type==='run' && yards > 0 && !turnover) {
+    yards += 10; breakdown.push('Breakaway chaos: +10'); buffO.runBreakaway = false; big = true; outcomeLabel = 'BREAKAWAY';
+  }
+  if (buffO.goDeep && offPlay.stat==='pass' && !turnover && !sack && !incomplete) {
+    yards = Math.max(yards, 22); big = true; outcomeLabel = 'BREAKAWAY'; buffO.goDeep = false;
+  }
+  if (buffD.fumbleCheck && !turnover && total < 4) {
+    const fRoll = rollDie();
+    if (fRoll <= 3) { turnover = 'fumble'; }
+    buffD.fumbleCheck = false;
+  }
+
+  // apply position change
+  const startPos = s.position;
+  let newPos = clamp(startPos + yards, 0, 100);
+  isTD = newPos >= 100 && !turnover;
+  const safety = newPos <= 0 && !turnover;
+
+  const offSubDef = offPlay.subOptions && s.offSub ? offPlay.subOptions.find(o=>o.id===s.offSub) : null;
+  const defSubDef = defPlay.subOptions && s.defSub ? defPlay.subOptions.find(o=>o.id===s.defSub) : null;
+
+  s.lastResult = {
+    offSide, defSide, offPlay, defPlay, die, total, breakdown, yards, outcomeLabel,
+    turnover, isTD, safety, correct, startPos, newPos, big, sack, incomplete,
+    offSubName: offSubDef ? offSubDef.name : null, defSubName: defSubDef ? defSubDef.name : null,
+  };
+
+  return s.lastResult;
+}
+
+function applyResultToState(s){
+  const r = s.lastResult;
+  const offSide = r.offSide, defSide = r.defSide;
+
+  // momentum
+  if (r.isTD || r.turnover==='interception' && false) {} // placeholder, real momentum below
+  if (r.big) { s.momentum[offSide] = clamp(s.momentum[offSide]+1, 0, 5); }
+  if (r.sack || r.turnover) { s.momentum[defSide] = clamp(s.momentum[defSide]+1, 0, 5); s.momentum[offSide] = clamp(s.momentum[offSide]-1, 0, 5); }
+
+  let chaosEligible = false;
+
+  if (r.isTD) {
+    s.score[offSide] += 7;
+    log(s, `🏈 TOUCHDOWN ${teamOf(s,offSide).name}! ${r.outcomeLabel} for ${r.yards} yards.`, 'score');
+    s.momentum[offSide] = clamp(s.momentum[offSide]+2, 0, 5);
+    chaosEligible = true;
+    kickoff(s, offSide);
+  } else if (r.safety) {
+    s.score[defSide] += 2;
+    log(s, `SAFETY — ${teamOf(s,defSide).name} scores 2.`, 'score');
+    kickoff(s, defSide, true);
+  } else if (r.turnover) {
+    log(s, `${r.turnover==='interception'?'🚫 INTERCEPTED':'💥 FUMBLE — RECOVERED'} by ${teamOf(s,defSide).name}!`, 'chaos');
+    s.momentum[defSide] = clamp(s.momentum[defSide]+1, 0, 5);
+    chaosEligible = true;
+    flipPossession(s, r.newPos);
+  } else {
+    s.position = r.newPos;
+    const gainedFirst = r.newPos >= startFirstDownMarker(s);
+    if (gainedFirst) {
+      log(s, `${teamOf(s,offSide).name} ${r.outcomeLabel.toLowerCase()} — ${r.yards} yds. FIRST DOWN.`, r.big?'chaos':'');
+      s.down = 1; s.distance = Math.min(10, 100 - s.position);
+      if (r.big) chaosEligible = true;
+    } else {
+      log(s, `${teamOf(s,offSide).name} ${r.outcomeLabel.toLowerCase()} — ${r.yards} yds. ${ordinal(s.down)} & ${s.down<4?s.distance-r.yards>0?s.distance-r.yards:'Goal':''}`, r.big?'chaos':'');
+      s.distance = Math.max(0, s.distance - r.yards);
+      s.down += 1;
+      if (r.big) chaosEligible = true;
+      if (s.down > 4) {
+        log(s, `TURNOVER ON DOWNS.`, 'chaos');
+        flipPossession(s, s.position);
+      }
+    }
+  }
+
+  s.totalPlaysLeft -= 1;
+  s.playsLeftInQtr -= 1;
+  if (s.playsLeftInQtr <= 0 && s.quarter < TOTAL_QUARTERS) {
+    s.quarter += 1; s.playsLeftInQtr = PLAY_BUDGET_PER_QTR;
+    log(s, `— End of Q${s.quarter-1} —`, '');
+  }
+
+  // reset per-down selections
+  s.defChoice=null; s.defSub=null; s.defPrediction=null; s.offChoice=null; s.offSub=null; s.offStar=null; s.defStar=null; s.momentumSpendUsed=false;
+
+  if (s.totalPlaysLeft <= 0 && !r.isTD && !r.safety) {
+    endGame(s);
+    return;
+  }
+  if (s.totalPlaysLeft <= 0) { endGame(s); return; }
+
+  if (chaosEligible && Math.random() < 0.65) {
+    const card = CHAOS_CARDS[Math.floor(Math.random()*CHAOS_CARDS.length)];
+    s.pendingChaos = card;
+    s.postChaosPhase = 'handoff-defense';
+    s.phase = 'chaos';
+  } else {
+    s.phase = 'handoff-defense';
+  }
+}
+
+function startFirstDownMarker(s){ return Math.min(100, s.position); } // not used directly; kept for clarity
+
+function ordinal(n){ return ['','1st','2nd','3rd','4th'][n] || (n+'th'); }
+
+function kickoff(s, scoringSide, isSafetyKick){
+  const receiving = otherSide(scoringSide);
+  s.offense = receiving;
+  s.position = isSafetyKick ? 30 : 25;
+  s.down = 1; s.distance = 10;
+}
+
+function flipPossession(s, spotInOldOffenseCoords){
+  const newOffense = otherSide(s.offense);
+  s.offense = newOffense;
+  s.position = clamp(100 - spotInOldOffenseCoords, 0, 100);
+  s.down = 1; s.distance = Math.min(10, 100-s.position);
+}
+
+function endGame(s){
+  s.gameOver = true;
+  if (s.score.A > s.score.B) s.winner = 'A';
+  else if (s.score.B > s.score.A) s.winner = 'B';
+  else s.winner = 'TIE';
+  s.phase = 'gameover';
+}
+
+/* ---------- Special teams: punt / field goal / fake ---------- */
+function doPunt(s){
+  const offSide = s.offense, offTeam = teamOf(s, offSide);
+  const buff = s.buffs[offSide].stBonus || 0;
+  s.buffs[offSide].stBonus = 0;
+  const kickerBonus = hasStar(s, offSide, 'kicker') ? 6 : 0;
+  const base = 32 + Math.floor(Math.random()*14) + Math.round((offTeam.st-7)*1.5) + Math.round(buff/5) + kickerBonus;
+  const landSpot = clamp(s.position + base, 0, 100);
+  log(s, `${offTeam.name} punts ${base} yards.`, '');
+  if (landSpot >= 100) {
+    log(s, `Touchback.`, '');
+    flipPossessionTouchback(s);
+  } else {
+    const ret = Math.floor(Math.random()*9);
+    flipPossession(s, landSpot - ret);
+  }
+  advanceAfterSpecialTeams(s);
+}
+
+function flipPossessionTouchback(s){
+  s.offense = otherSide(s.offense);
+  s.position = 25; s.down=1; s.distance=10;
+}
+
+function doFieldGoal(s){
+  const offSide = s.offense, offTeam = teamOf(s, offSide), defSide = otherSide(offSide);
+  const kickDistance = (100 - s.position) + 17;
+  const buff = s.buffs[offSide].stBonus || 0; s.buffs[offSide].stBonus = 0;
+  let chance;
+  if (kickDistance<=35) chance=0.93; else if (kickDistance<=45) chance=0.78; else if (kickDistance<=55) chance=0.55; else chance=0.28;
+  chance += (offTeam.st-7)*0.03 + buff/100 + (hasStar(s, offSide, 'kicker') ? 0.1 : 0);
+  chance = clamp(chance, 0.05, 0.97);
+  const made = Math.random() < chance;
+  if (made) {
+    s.score[offSide] += 3;
+    log(s, `🏈 FIELD GOAL GOOD (${kickDistance} yds) — ${offTeam.name} +3.`, 'score');
+    kickoff(s, offSide);
+  } else {
+    log(s, `❌ FIELD GOAL MISSED (${kickDistance} yds).`, 'chaos');
+    flipPossession(s, s.position);
+  }
+  advanceAfterSpecialTeams(s);
+}
+
+function doFake(s){
+  const offSide = s.offense, offTeam = teamOf(s, offSide);
+  const die = rollDie()+rollDie();
+  const total = die + Math.round((offTeam.pass-7)/2) - 7; // vs average D of 7
+  if (total >= 4) {
+    const yards = s.distance + 4 + Math.floor(Math.random()*8);
+    log(s, `🎭 FAKE WORKS! ${offTeam.name} gains ${yards} yards. FIRST DOWN.`, 'chaos');
+    s.position = clamp(s.position+yards, 0, 100);
+    if (s.position >= 100) { s.score[offSide]+=7; log(s,`🏈 TOUCHDOWN on the fake!`,'score'); kickoff(s, offSide); }
+    else { s.down=1; s.distance = Math.min(10, 100-s.position); }
+  } else {
+    log(s, `🎭 FAKE FAILS! Turnover on downs.`, 'chaos');
+    flipPossession(s, s.position);
+  }
+  advanceAfterSpecialTeams(s);
+}
+
+function advanceAfterSpecialTeams(s){
+  s.totalPlaysLeft -= 1; s.playsLeftInQtr -= 1;
+  if (s.playsLeftInQtr <= 0 && s.quarter < TOTAL_QUARTERS) { s.quarter += 1; s.playsLeftInQtr = PLAY_BUDGET_PER_QTR; }
+  s.fourthDownChoice = null;
+  if (s.totalPlaysLeft <= 0) { endGame(s); return; }
+  s.phase = 'handoff-defense';
+}
+
+/* =========================================================
+   RENDERING
+   ========================================================= */
+const app = document.getElementById('app');
+
+function render(){
+  let html = '';
+  html += brandHeader();
+
+  if (state && state.phase !== 'teamselect') {
+    html += scorebug();
+    html += fieldView();
+  }
+
+  if (!state) {
+    html += setupPhase === 'star-draft' ? screenStarDraft() : screenTeamSelect();
+  }
+  else if (state.phase === 'handoff-defense') html += screenHandoff('defense');
+  else if (state.phase === 'defense-call') html += screenDefenseCall();
+  else if (state.phase === 'handoff-offense') html += screenHandoff('offense');
+  else if (state.phase === 'offense-call') html += screenOffenseCall();
+  else if (state.phase === 'fourth-down') html += screenFourthDown();
+  else if (state.phase === 'reveal-pre') html += screenRevealPre();
+  else if (state.phase === 'reveal-result') html += screenRevealResult();
+  else if (state.phase === 'chaos') html += screenChaos();
+  else if (state.phase === 'gameover') html += screenGameOver();
+
+  if (state) html += logPanel();
+  html += `<div class="footer-note">4TH &amp; CHAOS — pass-and-play. Don't peek during your opponent's turn.</div>`;
+
+  app.innerHTML = html;
+}
+
+function brandHeader(){
+  return `<div class="brand"><h1>4TH &amp; <span>CHAOS</span></h1><div class="tag">call &middot; predict &middot; reveal &middot; roll</div></div>`;
+}
+
+function scorebug(){
+  const A = TEAMS[state.teams.A], B = TEAMS[state.teams.B];
+  const dd = state.down ? `${ordinal(state.down)} &amp; ${state.distance===0?'Goal':state.distance}` : '';
+  return `
+  <div class="scorebug">
+    <div class="sb-team"><div class="sb-name ${state.offense==='A'?'offense':''}">${A.name}</div><div class="sb-score">${state.score.A}</div></div>
+    <div class="sb-mid"><div class="q">Q${state.quarter}</div><div class="dd">${dd}</div></div>
+    <div class="sb-team right"><div class="sb-name ${state.offense==='B'?'offense':''}">${B.name}</div><div class="sb-score">${state.score.B}</div></div>
+  </div>
+  ${state.quarter===4 ? `<div class="clutch-banner">⏱ CLUTCH MODE — FINAL QUARTER</div>` : ''}
+  `;
+}
+
+function fieldView(){
+  const pos = state.position; // 0-100 own goal to opp goal, current offense perspective
+  const firstMarker = Math.min(100, pos + state.distance);
+  const ballLeft = 6 + pos*0.88;
+  const markerLeft = 6 + firstMarker*0.88;
+  let yardLines = '';
+  for (let i=10;i<=90;i+=10){ yardLines += `<div class="yardmark" style="left:${6+i*0.88}%"></div>`; }
+  return `
+  <div class="field-wrap">
+    <div class="field">
+      <div class="endzone left"></div>
+      <div class="endzone right"></div>
+      ${yardLines}
+      <div class="firstdown-marker" style="left:${markerLeft}%"></div>
+      <div class="ball-marker" style="left:${ballLeft}%"></div>
+    </div>
+    <div class="field-labels"><span>${teamOf(state,state.offense).name} goal</span><span>Opponent goal</span></div>
+  </div>`;
+}
+
+function logPanel(){
+  if (!state.log.length) return '';
+  const items = state.log.slice(-12).map(e => `<div class="log-entry ${e.cls}">${e.text}</div>`).join('');
+  return `<div class="panel"><h2 style="font-size:.85rem;margin-bottom:8px;">Drive Log</h2><div class="log">${items}</div></div>`;
+}
+
+/* ---------- Team select ---------- */
+let setupPhase = 'team-select';
+let teamsChosen = { A:null, B:null };
+let pickState = { A:null, B:null, step:'A' };
+let draftState = { A:[], B:[], step:'A' };
+
+function screenTeamSelect(){
+  const step = pickState.step;
+  const teamsHtml = Object.values(TEAMS).map(t => `
+    <div class="team-card ${pickState[step]===t.id?'selected':''}" onclick="pickTeam('${t.id}')">
+      <h3>${t.name}</h3>
+      <div class="sub" style="margin-bottom:8px;">${t.desc}</div>
+      <div class="stat-row">
+        <div class="stat-chip">RUN <b>${t.run}</b></div>
+        <div class="stat-chip">PASS <b>${t.pass}</b></div>
+        <div class="stat-chip">DEF <b>${t.def}</b></div>
+        <div class="stat-chip">ST <b>${t.st}</b></div>
+      </div>
+    </div>`).join('');
+  return `
+  <div class="panel">
+    <h2>Player ${step} — choose your team</h2>
+    <div class="sub">Pass the device to Player ${step}. Each team plays differently — there's no single best pick.</div>
+    ${teamsHtml}
+    <div class="btn-row" style="margin-top:10px;">
+      <button class="primary" ${pickState[step]?'':'disabled'} onclick="confirmTeamPick()">Confirm</button>
+    </div>
+  </div>`;
+}
+function pickTeam(id){ pickState[pickState.step] = id; render(); }
+function confirmTeamPick(){
+  if (pickState.step === 'A') { pickState.step = 'B'; render(); return; }
+  teamsChosen = { A: pickState.A, B: pickState.B };
+  setupPhase = 'star-draft';
+  render();
+}
+
+/* ---------- Star draft ---------- */
+function screenStarDraft(){
+  const step = draftState.step;
+  const team = TEAMS[teamsChosen[step]];
+  const picked = draftState[step];
+  const cards = STAR_PLAYERS.map(star => `
+    <div class="star-pool-card ${picked.includes(star.id)?'selected':''}" onclick="toggleDraftStar('${star.id}')">
+      <div class="icon">${star.icon}</div>
+      <div>
+        <div class="name">${star.name}</div>
+        <div class="desc">${star.desc}</div>
+        <span class="kind-tag ${star.kind}">${star.kind}</span>
+      </div>
+    </div>`).join('');
+  return `
+  <div class="panel">
+    <h2>${team.name} — Draft 3 Star Players</h2>
+    <div class="sub">Pass the device to the ${team.name} player. Pick exactly 3 of these 6 — active stars are limited-use game-changers, passive stars are always-on edges. Chosen: ${picked.length}/3</div>
+    ${cards}
+    <div class="btn-row" style="margin-top:10px;">
+      <button class="primary" ${picked.length===3?'':'disabled'} onclick="confirmDraft()">Confirm Roster</button>
+    </div>
+  </div>`;
+}
+function toggleDraftStar(id){
+  const arr = draftState[draftState.step];
+  const idx = arr.indexOf(id);
+  if (idx >= 0) { arr.splice(idx,1); }
+  else { if (arr.length >= 3) return; arr.push(id); }
+  render();
+}
+function confirmDraft(){
+  if (draftState.step === 'A') { draftState.step = 'B'; render(); return; }
+  const first = Math.random() < 0.5 ? 'A' : 'B';
+  state = newGame(teamsChosen.A, teamsChosen.B, first, { A: draftState.A, B: draftState.B });
+  log(state, `Coin toss: ${teamOf(state,first).name} receives the ball first.`, '');
+  render();
+}
+
+/* ---------- Handoff ---------- */
+function screenHandoff(which){
+  const actingSide = which === 'defense' ? otherSide(state.offense) : state.offense;
+  const team = teamOf(state, actingSide);
+  const purpose = which === 'defense' ? 'call your defense &amp; make a prediction' : 'call your offensive play';
+  return `
+  <div class="panel handoff">
+    <div class="handoff-icon">🔒</div>
+    <h2>Pass to ${team.name}</h2>
+    <div class="sub">Player controlling ${team.name}, get ready to ${purpose}.<br>Everyone else, look away.</div>
+    <button class="primary" onclick="proceedFromHandoff('${which}')">I'm ${team.name} — Show my screen</button>
+  </div>`;
+}
+function proceedFromHandoff(which){
+  state.phase = which === 'defense' ? 'defense-call' : (state.down===4 ? 'fourth-down' : 'offense-call');
+  render();
+}
+
+/* ---------- Defense call ---------- */
+function screenDefenseCall(){
+  const defSide = otherSide(state.offense);
+  const team = teamOf(state, defSide);
+  const cards = Object.values(DEF_PLAYS).map(p => `
+    <div class="play-card ${state.defChoice===p.id?'selected':''}" onclick="pickDef('${p.id}')">
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-desc">${p.isBlitz?'High risk / high reward':(p.strongVs.length?'Strong vs '+p.strongVs.join(', ').replace(/_/g,' '):'Situational')}</div>
+    </div>`).join('');
+  const predBtns = ['run','pass'].map(p => `<button class="${state.defPrediction===p?'selected':''}" onclick="pickPrediction('${p}')">${p==='run'?'They will RUN':'They will PASS'}</button>`).join('');
+
+  const chosenDefPlay = state.defChoice ? DEF_PLAYS[state.defChoice] : null;
+  let subHtml = '';
+  if (chosenDefPlay && chosenDefPlay.subOptions) {
+    const label = chosenDefPlay.id === 'blitz' ? 'Where do your blitzers come from?' : 'Where do your zone defenders sit?';
+    const btns = chosenDefPlay.subOptions.map(o => `
+      <div class="play-card subchoice-btn ${state.defSub===o.id?'selected':''}" onclick="pickDefSub('${o.id}')">
+        <div class="sc-name">${o.name}</div><div class="sc-desc">${o.desc}</div>
+      </div>`).join('');
+    subHtml = `<div class="subchoice-wrap"><div class="subchoice-label">${label}</div><div class="subchoice-row">${btns}</div></div>`;
+  }
+
+  const roster = state.starRoster[defSide];
+  let starRow = '';
+  if (roster.includes('rusher')) {
+    starRow += `
+    <div class="toggle-row">
+      <div><div class="tr-label">🧱 Pass Rusher (Blitz +2)</div><div class="tr-sub">${state.starUses[defSide].rusher} use(s) left</div></div>
+      <button ${state.starUses[defSide].rusher<1 || state.defChoice!=='blitz' ?'disabled':''} class="${state.defStar==='rusher'?'selected':''}" onclick="toggleDefStar('rusher')">${state.defStar==='rusher'?'Active':'Use'}</button>
+    </div>`;
+  }
+  if (roster.includes('corner')) {
+    starRow += `<div class="passive-badge">🛡️ Shutdown CB equipped — deep passes against you are always -2.</div>`;
+  }
+
+  const momentumRow = momentumSpendRow(defSide, 'defense');
+  const needsSub = chosenDefPlay && chosenDefPlay.subOptions && !state.defSub;
+  const canLock = state.defChoice && state.defPrediction && !needsSub;
+
+  return `
+  <div class="panel">
+    <h2>${team.name} — Defense</h2>
+    <div class="sub">Pick a defensive call, then predict whether the offense will run or pass. A correct prediction swings the roll your way.</div>
+    <div class="card-grid">${cards}</div>
+    ${subHtml}
+    <div class="toggle-row"><div class="tr-label">Prediction</div><div class="btn-row">${predBtns}</div></div>
+    ${starRow}
+    ${momentumRow}
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="primary" ${canLock?'':'disabled'} onclick="lockDefense()">Lock In Defense</button>
+    </div>
+  </div>`;
+}
+function pickDef(id){ state.defChoice = id; state.defSub = null; if (id!=='blitz') state.defStar=null; render(); }
+function pickDefSub(id){ state.defSub = id; render(); }
+function pickPrediction(p){ state.defPrediction = p; render(); }
+function toggleDefStar(id){ state.defStar = state.defStar===id ? null : id; render(); }
+function lockDefense(){ state.phase = 'handoff-offense'; render(); }
+
+/* ---------- Offense call ---------- */
+function screenOffenseCall(){
+  const offSide = state.offense;
+  const team = teamOf(state, offSide);
+  const cards = Object.values(OFF_PLAYS).map(p => `
+    <div class="play-card ${state.offChoice===p.id?'selected':''}" onclick="pickOff('${p.id}')">
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-desc">${p.desc}</div>
+    </div>`).join('');
+
+  const chosenOffPlay = state.offChoice ? OFF_PLAYS[state.offChoice] : null;
+  let subHtml = '';
+  if (chosenOffPlay && chosenOffPlay.subOptions) {
+    const label = chosenOffPlay.type === 'run' ? 'Which gap?' : 'Which route?';
+    const btns = chosenOffPlay.subOptions.map(o => `
+      <div class="play-card subchoice-btn ${state.offSub===o.id?'selected':''}" onclick="pickOffSub('${o.id}')">
+        <div class="sc-name">${o.name}</div><div class="sc-desc">${o.desc}</div>
+      </div>`).join('');
+    subHtml = `<div class="subchoice-wrap"><div class="subchoice-label">${label}</div><div class="subchoice-row">${btns}</div></div>`;
+  }
+
+  const roster = state.starRoster[offSide];
+  let starRow = '';
+  if (roster.includes('qb')) {
+    starRow += `
+    <div class="toggle-row">
+      <div><div class="tr-label">⭐ Elite QB (+2 on pass plays)</div><div class="tr-sub">${state.starUses[offSide].qb} use(s) left</div></div>
+      <button ${state.starUses[offSide].qb<1?'disabled':''} class="${state.offStar==='qb'?'selected':''}" onclick="toggleOffStar('qb')">${state.offStar==='qb'?'Active':'Use'}</button>
+    </div>`;
+  }
+  if (roster.includes('speed')) {
+    starRow += `
+    <div class="toggle-row">
+      <div><div class="tr-label">⚡ Speedster (+2 on any play)</div><div class="tr-sub">${state.starUses[offSide].speed} use(s) left</div></div>
+      <button ${state.starUses[offSide].speed<1?'disabled':''} class="${state.offStar==='speed'?'selected':''}" onclick="toggleOffStar('speed')">${state.offStar==='speed'?'Active':'Use'}</button>
+    </div>`;
+  }
+  if (roster.includes('powerback')) {
+    starRow += `
+    <div class="toggle-row">
+      <div><div class="tr-label">💪 Power Back (+2 on runs)</div><div class="tr-sub">${state.starUses[offSide].powerback} use(s) left</div></div>
+      <button ${state.starUses[offSide].powerback<1?'disabled':''} class="${state.offStar==='powerback'?'selected':''}" onclick="toggleOffStar('powerback')">${state.offStar==='powerback'?'Active':'Use'}</button>
+    </div>`;
+  }
+  if (roster.includes('kicker')) {
+    starRow += `<div class="passive-badge">🦵 Automatic Kicker equipped — your field goals and punts always get a boost.</div>`;
+  }
+
+  const momentumRow = momentumSpendRow(offSide, 'offense');
+  const clutchRow = state.quarter===4 ? clutchCardRow(offSide) : '';
+  const needsSub = chosenOffPlay && chosenOffPlay.subOptions && !state.offSub;
+  const canLock = state.offChoice && !needsSub;
+
+  return `
+  <div class="panel">
+    <h2>${team.name} — Offense</h2>
+    <div class="sub">${ordinal(state.down)} &amp; ${state.distance===0?'Goal':state.distance} at their own coordinate ${state.position}. Pick your play.</div>
+    <div class="card-grid">${cards}</div>
+    ${subHtml}
+    ${starRow}
+    ${clutchRow}
+    ${momentumRow}
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="primary" ${canLock?'':'disabled'} onclick="lockOffense()">Lock In &amp; Reveal</button>
+    </div>
+  </div>`;
+}
+function pickOff(id){ state.offChoice = id; state.offSub = null; render(); }
+function pickOffSub(id){ state.offSub = id; render(); }
+function toggleOffStar(id){
+  if (state.offStar === id) { state.offStar = null; render(); return; }
+  state.offStar = id; render();
+}
+function lockOffense(){
+  if (state.offStar) { const side=state.offense; if (state.starUses[side][state.offStar]>0) state.starUses[side][state.offStar]-=1; }
+  if (state.defStar) { const side=otherSide(state.offense); if (state.starUses[side][state.defStar]>0) state.starUses[side][state.defStar]-=1; }
+  state.phase = 'reveal-pre';
+  render();
+}
+
+function clutchCardRow(offSide){
+  if (state.clutchUsed[offSide]) return `<div class="toggle-row"><div class="tr-label">🌀 Go Deep (used)</div><div class="tr-sub">Clutch card spent</div></div>`;
+  return `
+    <div class="toggle-row">
+      <div><div class="tr-label">🌀 Go Deep (Clutch Card)</div><div class="tr-sub">Guarantees a big gain on your next completed pass, once per game</div></div>
+      <button onclick="useClutch('${offSide}')">Use</button>
+    </div>`;
+}
+function useClutch(side){
+  state.clutchUsed[side] = true;
+  state.buffs[side].goDeep = true;
+  render();
+}
+
+/* ---------- Momentum spend ---------- */
+function momentumSpendRow(side, role){
+  const m = state.momentum[side];
+  const pips = Array.from({length:5}, (_,i)=>`<div class="momentum-pip ${i<m?'filled':''}"></div>`).join('');
+  const disabled = state.momentumSpendUsed ? 'disabled' : '';
+  return `
+  <div class="toggle-row" style="flex-direction:column;align-items:stretch;">
+    <div class="tr-label" style="margin-bottom:4px;">Momentum (${m}/5)</div>
+    <div class="momentum-bar">${pips}</div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button ${m<2||disabled?'disabled':''} onclick="spendMomentum('${side}','clutch')">Clutch Play +2 (2)</button>
+      <button ${m<3||disabled?'disabled':''} onclick="spendMomentum('${side}','chaos')">Draw Chaos Card (3)</button>
+    </div>
+  </div>`;
+}
+function spendMomentum(side, kind){
+  if (state.momentumSpendUsed) return;
+  if (kind === 'clutch') {
+    if (state.momentum[side] < 2) return;
+    state.momentum[side] -= 2;
+    state.buffs[side].nextPlayFlat += 2;
+    state.momentumSpendUsed = true;
+    log(state, `${teamOf(state,side).name} spends Momentum: Clutch Play +2.`, 'chaos');
+  } else if (kind === 'chaos') {
+    if (state.momentum[side] < 3) return;
+    state.momentum[side] -= 3;
+    state.momentumSpendUsed = true;
+    const card = CHAOS_CARDS[Math.floor(Math.random()*CHAOS_CARDS.length)];
+    const offSide = state.offense, defSide = otherSide(state.offense);
+    card.apply(state, offSide, defSide);
+  }
+  render();
+}
+
+/* ---------- Fourth down ---------- */
+function screenFourthDown(){
+  const offSide = state.offense, team = teamOf(state, offSide);
+  const distanceToGoal = 100 - state.position;
+  const kickDistance = distanceToGoal + 17;
+  const inFGRange = kickDistance <= 58;
+  return `
+  <div class="panel">
+    <h2>${team.name} — 4th &amp; ${state.distance===0?'Goal':state.distance}</h2>
+    <div class="sub">You're at their own ${state.position}. Field goal distance would be ${kickDistance} yards. Choose your move.</div>
+    <div class="btn-row" style="flex-direction:column;">
+      <button onclick="fourthDownGo()">🏃 Go For It</button>
+      <button ${inFGRange?'':'disabled'} onclick="fourthDownFG()">🦵 Attempt Field Goal ${inFGRange?'':'(too far)'}</button>
+      <button onclick="fourthDownPunt()">👢 Punt</button>
+      <button class="danger" onclick="fourthDownFake()">🎭 Fake It (risky)</button>
+    </div>
+  </div>`;
+}
+function fourthDownGo(){ state.phase = 'handoff-defense'; render(); }
+function fourthDownFG(){ doFieldGoal(state); render(); }
+function fourthDownPunt(){ doPunt(state); render(); }
+function fourthDownFake(){ doFake(state); render(); }
+
+/* ---------- Reveal ---------- */
+function screenRevealPre(){
+  const offPlay = OFF_PLAYS[state.offChoice], defPlay = DEF_PLAYS[state.defChoice];
+  const offSubDef = offPlay.subOptions && state.offSub ? offPlay.subOptions.find(o=>o.id===state.offSub) : null;
+  const defSubDef = defPlay.subOptions && state.defSub ? defPlay.subOptions.find(o=>o.id===state.defSub) : null;
+  return `
+  <div class="panel">
+    <h2>Reveal</h2>
+    <div class="reveal-plays">
+      <div class="reveal-card"><div class="who">${teamOf(state,state.offense).name}</div><div class="what">${offPlay.name}${offSubDef?' — '+offSubDef.name:''}</div></div>
+      <div class="reveal-vs">VS</div>
+      <div class="reveal-card"><div class="who">${teamOf(state,otherSide(state.offense)).name}</div><div class="what">${defPlay.name}${defSubDef?' — '+defSubDef.name:''}</div></div>
+    </div>
+    <div class="result-sub">Defense predicted: <b>${state.defPrediction.toUpperCase()}</b></div>
+    <div class="btn-row" style="justify-content:center;margin-top:10px;">
+      <button class="primary" onclick="doRoll()">🎲 Roll the Dice</button>
+    </div>
+  </div>`;
+}
+function doRoll(){
+  resolvePlay(state);
+  state.phase = 'reveal-result';
+  render();
+}
+function screenRevealResult(){
+  const r = state.lastResult;
+  let headline = r.outcomeLabel, cls='';
+  if (r.isTD) { headline = 'TOUCHDOWN!'; cls='good'; }
+  else if (r.turnover) { headline = r.turnover.toUpperCase()+'!'; cls='bad'; }
+  else if (r.safety) { headline='SAFETY'; cls='bad'; }
+  else if (r.big) { cls='good'; }
+  else if (r.sack || r.incomplete) { cls='bad'; }
+
+  const yardsText = r.yards === 0 ? 'No gain' : (r.yards > 0 ? `+${r.yards} yards` : `${r.yards} yards`);
+
+  return `
+  <div class="panel">
+    <div class="die-row"><div class="die">${r.die}</div><div style="align-self:center;">total: <b style="color:var(--gold)">${r.total}</b></div></div>
+    <div class="result-headline ${cls}">${headline}</div>
+    <div class="result-sub">${yardsText} on the ${r.offPlay.name}${r.offSubName?' ('+r.offSubName+')':''} vs ${r.defPlay.name}${r.defSubName?' ('+r.defSubName+')':''}. Prediction ${r.correct?'CORRECT':'WRONG'}.</div>
+    <div class="breakdown">${r.breakdown.join(' &nbsp;&middot;&nbsp; ')}</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="primary" onclick="continueAfterResult()">Continue</button>
+    </div>
+  </div>`;
+}
+function continueAfterResult(){
+  applyResultToState(state);
+  render();
+}
+
+/* ---------- Chaos ---------- */
+function screenChaos(){
+  const c = state.pendingChaos;
+  return `
+  <div class="panel chaos-modal">
+    <h2>⚡ CHAOS CARD</h2>
+    <div class="chaos-title">${c.icon} ${c.name}</div>
+    <div class="sub">${c.desc}</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="danger" onclick="applyChaos()">Apply Effect</button>
+    </div>
+  </div>`;
+}
+function applyChaos(){
+  const c = state.pendingChaos;
+  c.apply(state, state.offense, otherSide(state.offense));
+  state.pendingChaos = null;
+  state.phase = state.postChaosPhase || 'handoff-defense';
+  render();
+}
+
+/* ---------- Game over ---------- */
+function screenGameOver(){
+  const A = TEAMS[state.teams.A], B = TEAMS[state.teams.B];
+  const winnerText = state.winner === 'TIE' ? "IT'S A TIE" : `${teamOf(state, state.winner).name} WINS`;
+  return `
+  <div class="panel" style="text-align:center;">
+    <h2 style="font-size:1.6rem;color:var(--gold);">${winnerText}</h2>
+    <div class="result-sub" style="font-size:1.1rem;margin:10px 0 18px;">${A.name} ${state.score.A} — ${state.score.B} ${B.name}</div>
+    <button class="primary" onclick="restartGame()">🏈 New Game</button>
+  </div>`;
+}
+function restartGame(){
+  state = null;
+  setupPhase = 'team-select';
+  teamsChosen = { A:null, B:null };
+  pickState = { A:null, B:null, step:'A' };
+  draftState = { A:[], B:[], step:'A' };
+  render();
+}
+
+/* ---------- boot ---------- */
+render();
+</script>
+</body>
+</html>
